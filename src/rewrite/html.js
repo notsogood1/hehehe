@@ -87,24 +87,32 @@ class HTML extends EventEmitter {
         return ast;
     }
     wrapSrcset(str, meta = this.ctx.meta) {
-        return str
-            .split(',')
-            .map((src) => {
-                const parts = src.trimStart().split(' ');
-                if (parts[0]) parts[0] = this.ctx.rewriteUrl(parts[0], meta);
-                return parts.join(' ');
-            })
-            .join(', ');
+        const regex = /(https?:\/)?(\/[^\/\s]+)+(?=\b(?!2\d+)[xyhw]?)/g;
+        const output = str.replace(regex, (match) => {
+            return this.ctx.rewriteUrl(match, meta);
+        });
+
+        // Rewrite anyways original regex would have captured stuff already
+        // This is just to get anything that has not been captured.
+        if (output === str) {
+            return this.ctx.rewriteUrl(str, meta);
+        }
+
+        return output;
     }
     unwrapSrcset(str, meta = this.ctx.meta) {
-        return str
-            .split(',')
-            .map((src) => {
-                const parts = src.trimStart().split(' ');
-                if (parts[0]) parts[0] = this.ctx.sourceUrl(parts[0], meta);
-                return parts.join(' ');
-            })
-            .join(', ');
+        const regex = /(https?:\/)?(\/[^\/\s]+)+(?=\b(?!2\d+)[xyhw]?)/g;
+        const output = str.replace(regex, (match) => {
+            return this.ctx.sourceUrl(match, meta);
+        });
+
+        // Rewrite anyways original regex would have captured stuff already
+        // This is just to get anything that has not been captured.
+        if (output === str) {
+            return this.ctx.sourceUrl(str, meta);
+        }
+        
+        return output;
     }
     static parse = parse;
     static parseFragment = parseFragment;
